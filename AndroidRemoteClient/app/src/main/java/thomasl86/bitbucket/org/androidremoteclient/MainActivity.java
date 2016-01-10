@@ -1,6 +1,8 @@
 package thomasl86.bitbucket.org.androidremoteclient;
 
+import android.app.ActionBar;
 import android.app.Notification;
+import android.content.Context;
 import android.graphics.Point;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -10,6 +12,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,7 +26,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public UDPClient mUDPClient    = null;
     String mAddress         = "192.168.1.70";
     Point mPtTouchInit      = new Point(0, 0);
-    double mMouseFact        = 3;
+    double mMouseFact       = 3;
+    boolean mIsKbOpen       = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +41,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         buttonLeft.setOnClickListener(this);
         Button buttonRight = (Button) findViewById(R.id.button_right);
         buttonRight.setOnClickListener(this);
+        Button buttonKeyboard = (Button) findViewById(R.id.button_keyboard);
+        buttonKeyboard.setOnClickListener(this);
         MyViewGroup myViewGroup = (MyViewGroup) findViewById(R.id.viewMousePad);
         myViewGroup.setMouseEventListener(this);
     }
@@ -97,6 +105,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
                 }
                 break;
+            case R.id.button_keyboard:
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                //this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+                break;
         }
     }
 
@@ -128,9 +141,32 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
             }
             return true;
+        case KeyEvent.KEYCODE_DEL:
+            if (mUDPClient.isConnected()) {
+                int unicodeChar = '\b';
+                int[] iCommand = {unicodeChar};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            }
+            else
+            {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+        default:
+            if (mUDPClient.isConnected()) {
+                int unicodeChar = event.getUnicodeChar();
+                int[] iCommand = {unicodeChar};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            }
+            else
+            {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+            return true;
         }
-
-        return super.onKeyDown(keyCode, event);
     }
 
     @Override

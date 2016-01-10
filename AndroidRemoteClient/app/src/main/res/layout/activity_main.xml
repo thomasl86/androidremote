@@ -14,12 +14,19 @@
         android:id="@+id/linearLayout"
         android:orientation="vertical">
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keyboard"
+            android:id="@+id/button_keyboard" />
+
         <thomasl86.bitbucket.org.androidremoteclient.MyViewGroup
             android:layout_width="wrap_content"
-            android:layout_height="424dp"
+            android:layout_height="345dp"
             android:id="@+id/viewMousePad"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:layout_weight="1.89" />
 
         <LinearLayout
             android:orientation="horizontal"
