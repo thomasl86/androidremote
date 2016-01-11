@@ -102,7 +102,9 @@ public class AndroidRemoteServer {
 				case Command.TYPE_MOUSE_WHEEL:
 					mouse.wheel(command.mCommand[0]);
 				case Command.TYPE_CONNECTED:
-					info("Connected to phone. Listening on port " + port + "...");
+					if(boVerbose){
+						info("Connected to phone. Listening on port " + port + "...");
+					}
 					break;
 				case Command.TYPE_VOLUME:
 					media.volume(command.mCommand[0]);

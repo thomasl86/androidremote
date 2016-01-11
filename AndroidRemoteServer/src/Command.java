@@ -17,6 +17,15 @@ public class Command {
 	public static final int MOUSE_BUT_DWN_M 		= 12;
     public static final int VOLUME_UP           	= 20;
     public static final int VOLUME_DOWN         	= 21;
+    public static final int KB_MODIFIER_ALT     	= 30;
+    public static final int KB_MODIFIER_CTRL    	= 31;
+    public static final int KB_MODIFIER_SHIFT   	= 32;
+    public static final int KB_HOME             	= 'r';
+    public static final int KB_END              	= 0x0A;
+    public static final int KB_UP               	= 0x2191;
+    public static final int KB_DOWN             	= 0x2193;
+    public static final int KB_LEFT             	= 0x2190;
+    public static final int KB_RIGHT            	= 0x2192;
 	
 	public byte mType = -1;
 	public int[] mCommand = null;

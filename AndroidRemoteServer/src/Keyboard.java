@@ -136,6 +136,11 @@ public class Keyboard {
         case '?': doType(VK_SHIFT, VK_SLASH); break;
         case ' ': doType(VK_SPACE); break;
         case '\b' : doType(VK_BACK_SPACE); break;
+        case Command.KB_UP : doType(VK_UP); break;
+        case Command.KB_DOWN : doType(VK_DOWN); break;
+        case Command.KB_LEFT : doType(VK_LEFT); break;
+        case Command.KB_RIGHT : doType(VK_RIGHT); break;
+        case '\r' : doType(VK_HOME); break;
         default:
             //throw new IllegalArgumentException("Cannot type character " + character);
         	boSuccess = false;
