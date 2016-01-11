@@ -1,29 +1,20 @@
 package thomasl86.bitbucket.org.androidremoteclient;
 
-import android.app.ActionBar;
-import android.app.Notification;
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements View.OnClickListener, MyViewGroup.MouseEventListener {
+public class MainActivity extends ActionBarActivity
+        implements View.OnClickListener, MyViewGroup.MouseEventListener {
 
-    public UDPClient mUDPClient    = null;
+    protected static UDPClient mUDPClient    = null;
     String mAddress         = "192.168.1.70";
     Point mPtTouchInit      = new Point(0, 0);
     double mMouseFact       = 3;
@@ -35,16 +26,18 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         mUDPClient = new UDPClient();
+        if(!mUDPClient.connect(mAddress)){
+            error("Connection attempt to IP " + mAddress + " failed.", Toast.LENGTH_SHORT);
+        }
 
         // Register listeners
         Button buttonLeft = (Button) findViewById(R.id.button_left);
         buttonLeft.setOnClickListener(this);
         Button buttonRight = (Button) findViewById(R.id.button_right);
         buttonRight.setOnClickListener(this);
-        Button buttonKeyboard = (Button) findViewById(R.id.button_keyboard);
-        buttonKeyboard.setOnClickListener(this);
         MyViewGroup myViewGroup = (MyViewGroup) findViewById(R.id.viewMousePad);
         myViewGroup.setMouseEventListener(this);
+
     }
 
     @Override
@@ -71,6 +64,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 else{
                     error("Connection attempt to IP " + mAddress + " failed.", Toast.LENGTH_LONG);
                 }
+                return true;
+            case R.id.action_keyboard:
+                Intent intent = new Intent(this, KeyboardActivity.class);
+                startActivity(intent);
                 return true;
         }
 
@@ -105,11 +102,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
                 }
                 break;
-            case R.id.button_keyboard:
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-                //this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                break;
         }
     }
 
@@ -123,9 +115,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 byte[] bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_VOLUME, iCommand));
                 mUDPClient.sendMsg(bMessage);
-            }
-            else
-            {
+            } else {
                 error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
             }
             return true;
@@ -135,9 +125,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 byte[] bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_VOLUME, iCommand));
                 mUDPClient.sendMsg(bMessage);
-            }
-            else
-            {
+            } else {
                 error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
             }
             return true;
@@ -148,11 +136,72 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 byte[] bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
                 mUDPClient.sendMsg(bMessage);
-            }
-            else
-            {
+            } else {
                 error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
             }
+            return true;
+        case Command.KB_UP:
+            if (mUDPClient.isConnected()) {
+                int[] iCommand = {Command.KB_UP};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            } else {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+            return true;
+        case Command.KB_DOWN:
+            if (mUDPClient.isConnected()) {
+                int[] iCommand = {Command.KB_DOWN};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            } else {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+            return true;
+        case Command.KB_LEFT:
+            if (mUDPClient.isConnected()) {
+                int[] iCommand = {Command.KB_LEFT};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            } else {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+            return true;
+        case Command.KB_RIGHT:
+            if (mUDPClient.isConnected()) {
+                int[] iCommand = {Command.KB_RIGHT};
+                byte[] bMessage =
+                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                mUDPClient.sendMsg(bMessage);
+            } else {
+                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+            }
+            return true;
+            case Command.KB_HOME:
+                if (mUDPClient.isConnected()) {
+                    int[] iCommand = {Command.KB_HOME};
+                    byte[] bMessage =
+                            MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                    mUDPClient.sendMsg(bMessage);
+                } else {
+                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+                }
+                return true;
+            case Command.KB_END:
+                if (mUDPClient.isConnected()) {
+                    int[] iCommand = {Command.KB_END};
+                    byte[] bMessage =
+                            MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
+                    mUDPClient.sendMsg(bMessage);
+                } else {
+                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
+                }
+                return true;
+        case KeyEvent.KEYCODE_BACK:
+            return super.onKeyDown(keyCode, event);
         default:
             if (mUDPClient.isConnected()) {
                 int unicodeChar = event.getUnicodeChar();
@@ -160,14 +209,18 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 byte[] bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
                 mUDPClient.sendMsg(bMessage);
-            }
-            else
-            {
+            } else {
                 error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
             }
             return true;
         }
+
     }
+
+    public void onKeyboardModifierDown(int keycode) {
+
+    }
+
 
     @Override
     public void onMotion(int[] iCommand) {
@@ -252,7 +305,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         Toast.makeText(this, "ERROR: " + stError, length).show();
     }
 
-    public void info(String stError, int length){
-        Toast.makeText(this, "INFO: " + stError, length).show();
+    public void info(String stInfo, int length){
+        Toast.makeText(this, "INFO: " + stInfo, length).show();
     }
 }
