@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+        <Space
+            android:layout_width="20px"
+            android:layout_height="40px" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keyboard"
+            android:id="@+id/button_keyboard" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <Space
+                android:layout_width="20px"
+                android:layout_height="40px"
+                android:layout_column="1" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Space
+                android:layout_width="10px"
+                android:layout_height="40px"
+                android:layout_column="1" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:text="UP"
+                android:id="@+id/button_up"
+                android:layout_column="3" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Space
+                android:layout_width="70px"
+                android:layout_height="20px"
+                android:layout_column="1" />
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:text="LEFT"
+                android:id="@+id/button_left"
+                android:layout_column="2" />
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:text="DOWN"
+                android:id="@+id/button_down"
+                android:layout_column="3" />
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:text="RIGHT"
+                android:id="@+id/button_right"
+                android:layout_column="4" />
+
+        </TableRow>
+
+    </TableLayout>
+</LinearLayout>
