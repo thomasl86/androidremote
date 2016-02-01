@@ -22,6 +22,9 @@ public class KeyboardActivity extends MainActivity
 
     private KeyboardEventListener mKeyboardEventListener;
 
+
+    /* Members */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

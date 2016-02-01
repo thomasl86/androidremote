@@ -2,30 +2,40 @@
 import java.awt.AWTException;
 import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import static java.util.Arrays.*;
 
-public class AndroidRemoteServer {
+public class AndroidRemoteServer implements KeyListener {
+	
+	/* Members */
+	private static boolean boEscKeyPress = false;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		
-		boolean boVerbose = false;
 		boolean boRunServer = false;
 		
-		//BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(40, 5);
-		//helpFormatter.form
 		OptionParser parser = new OptionParser();
-		parser.acceptsAll( asList("v", "verbose"), "be more chatty" );
-		parser.acceptsAll( asList("?", "h", "help"), "show help" );
-		 OptionSet optionSet = parser.parse( args );
+		parser.acceptsAll( asList("v", "verbose"), "Be more chatty." );
+		parser.acceptsAll( asList("?", "h", "help"), "Show help and exit." );
+		parser.accepts( "ip", "Get the wifi ip address and exit." );
+		OptionSet optionSet = parser.parse( args );
 		if (optionSet.hasOptions()){
+			// Print the help and exit.
 			if (optionSet.has("?") || optionSet.has("h") || optionSet.has("help")){
 				try {
 					parser.printHelpOn(System.out);
@@ -33,10 +43,17 @@ public class AndroidRemoteServer {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				boRunServer = false;
 			}
-			else if (optionSet.has("v") || optionSet.has("verbose")){
-				boVerbose = true;
+			// Run the server in verbose mode
+			if (optionSet.has("v") || optionSet.has("verbose")){
+				Printing.setVerbosity(true);
 				boRunServer = true;
+			}
+			// Print the wifi ip address and exit.
+			if (optionSet.has("ip")){
+				System.out.println(getWifiIpAddress());
+				boRunServer = false;
 			}
 		}
 		else{
@@ -53,9 +70,8 @@ public class AndroidRemoteServer {
 		
 		if (boRunServer){
 			UDPServer server = new UDPServer();
-			int port = 7777;
-			if (server.init(port)){
-				info("Server socket created. Listening on port " + port + "...");
+			if (server.init()){
+				Printing.info("Server socket created. Listening on port " + UDPServer.PORT_RCV + "...", 0);
 			}
 			
 			//TODO add handshake or something? 
@@ -67,10 +83,12 @@ public class AndroidRemoteServer {
 			boolean boIsInitCoord = false; 
 			Point ptInitPos = new Point(0,0);
 			
-			while(true){
-				byte[] data = server.receive();
+			while(!boEscKeyPress){
+				DatagramPacket packet = server.receive();
+				byte[] data = packet.getData();
+				String stClientIpAddress = packet.getAddress().getHostAddress();
 				if (data == null){
-					error("Receiving failed. Shutting down server.");
+					Printing.error("Receiving failed. Shutting down server.");
 					break;
 				}
 				Command command = MessagePacker.unpack(data);
@@ -81,9 +99,7 @@ public class AndroidRemoteServer {
 				case Command.TYPE_MOUSE_MOVE_INIT:
 					mouse.moveInit();
 					boIsInitCoord = true;
-					if (boVerbose){
-						info("Finger down detected.");
-					}
+					Printing.info("Finger down detected.",1);
 					break;
 				case Command.TYPE_MOUSE_MOVE:
 					int iPosX = command.mCommand[0];
@@ -95,51 +111,103 @@ public class AndroidRemoteServer {
 					iPosX = iPosX - ptInitPos.x;
 					iPosY = iPosY - ptInitPos.y;
 					mouse.move(new Point(iPosX, iPosY));
-					if (boVerbose){
-						System.out.println("Mouse pos: (" + iPosX + "," + iPosY +")");
-					}
+					Printing.info("Mouse pos: (" + iPosX + "," + iPosY +")",1);
 					break;
-				case Command.TYPE_MOUSE_WHEEL:
-					mouse.wheel(command.mCommand[0]);
+				case Command.TYPE_MOUSE_SCROLL_INIT:
+					Printing.info("Two fingers down detected.",1);
+					break;
+				case Command.TYPE_MOUSE_SCROLL:
+					mouse.scroll(command.mCommand[0]);
+					Printing.info("Mouse scrolling ("+command.mCommand[0]+".", 1);
+					break;
 				case Command.TYPE_CONNECTED:
-					if(boVerbose){
-						info("Connected to phone. Listening on port " + port + "...");
-					}
+					Printing.info("Connected to phone. Listening on port " + UDPServer.PORT_RCV + "...",1);
 					break;
 				case Command.TYPE_VOLUME:
 					media.volume(command.mCommand[0]);
 					break;
 				case Command.TYPE_KB:
 					if (!keyboard.type((char)command.mCommand[0])){
-						error("Key not found.");
+						Printing.error("Key not found.");
 					}
-					else if (boVerbose){
-						info("Key '" 
+					else{
+						Printing.info("Key '" 
 								+ Character.toString((char)command.mCommand[0]) 
-								+ "' has been pressed.");
+								+ "' has been pressed.",1);
 					}
+					break;
+				case Command.TYPE_SEND_INFO:
+					String stServerIpAddress = getWifiIpAddress();
+					Printing.info("Server IP address: " + stServerIpAddress, 1);
+					Printing.info("Client IP address: " + stClientIpAddress, 1);
+					int[] iCommand = {0};
+					// Wait 100 ms before replying
+					long delay = 100;
+					long time = System.currentTimeMillis();
+					long dt = 0;
+					while (dt < delay){
+						dt = System.currentTimeMillis() - time;
+					}
+					boolean boSuccess = server.sendMsg(Command.TYPE_SEND_INFO, stClientIpAddress);
+					if (boSuccess){
+						Printing.info("Server info sent.", 1);
+					}
+					else
+						Printing.error("Server info sending failed.");
 					break;
 				}
 			}
 			server.close();
 		}
 	}
-    
-   // Simple function to echo data to terminal
-   public static void echo(String msg)
-   {
-       System.out.println(msg);
-   }
 
-   // Simple function to echo data to terminal
-   public static void error(String msg)
-   {
-       System.out.println("ERROR: " + msg);
-   }
+	public static String getWifiIpAddress(){
+		Enumeration<NetworkInterface> networkInterfaces = null;
+		try {
+			networkInterfaces = NetworkInterface.getNetworkInterfaces();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Find the wifi interface by going through all available interfaces
+		if (networkInterfaces != null){
+			while (networkInterfaces.hasMoreElements())
+			{
+			    NetworkInterface networkInterface = (NetworkInterface) networkInterfaces.nextElement();
+			    if (networkInterface.getName().startsWith("wlan")){
+			    	Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+			    	while(inetAddresses.hasMoreElements()){
+			    		InetAddress inetAddress = inetAddresses.nextElement();
+			    		String stInetAddress = IPAddress.asString(inetAddress.getAddress());
+			    		if (stInetAddress != null){
+				    		return stInetAddress;
+			    		}
+			    	}
+			    }
+			    
+			}
+		}
+		return null;
+	}
 
-   // Simple function to echo data to terminal
-   public static void info(String msg)
-   {
-       System.out.println("INFO: " + msg);
-   }
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		if (e.getID() == KeyEvent.VK_ESCAPE){
+			boEscKeyPress = true;
+		}
+		
+	}
 }

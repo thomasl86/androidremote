@@ -19,11 +19,15 @@ public class MyViewGroup extends ViewGroup {
     /* Members */
 
     private int mTouchSlop      = 0;
-    Point mPtTouchInit          = new Point(0, 0);
-    double mMouseFact           = 3;
-    Context mContext            = null;
+    private Point mPtTouchInit          = new Point(0, 0);
+    private double mMouseFact           = 3;
+    private double mScrollFact          = 10;
+    private Context mContext            = null;
+    private boolean mIsInitMove         = false;
+    private float mPosXPre              = 0;
+    private float mPosYPre              = 0;
+    private long mTimeMsPre             = 0;
     private MouseEventListener mMouseEventListener;
-    boolean mIsInitMove         = false;
 
 
     /* Constructors */
@@ -45,8 +49,8 @@ public class MyViewGroup extends ViewGroup {
 
     /* Listener Interfaces */
     public interface MouseEventListener {
-        void onMotion(int[] iCommand);
-        void onDown();
+        void onMotion(int[] iCommand, int pointerCount);
+        void onDown(int pointerCount);
     }
 
 
@@ -68,11 +72,11 @@ public class MyViewGroup extends ViewGroup {
         int action = event.getActionMasked();
         int pointerId = event.getPointerId(index);
 
-        switch(action){
+        int pointerCount = event.getPointerCount();
+        switch (action) {
             case MotionEvent.ACTION_DOWN:
-                //int[] iPosDown = {(int) event.getX()-mPtTouchInit.x, (int) event.getY()-mPtTouchInit.y};
                 if (mMouseEventListener != null) {
-                    mMouseEventListener.onDown();
+                    mMouseEventListener.onDown(pointerCount);
                 }
                 mIsInitMove = true;
                 return true;
@@ -80,19 +84,34 @@ public class MyViewGroup extends ViewGroup {
 
                 return false;
             case MotionEvent.ACTION_MOVE:
-                if(mIsInitMove){
-                    mPtTouchInit = new Point((int)event.getX(), (int)event.getY());
+                if (mIsInitMove) {
+                    mPtTouchInit = new Point((int) event.getX(), (int) event.getY());
+                    mPosXPre = mPtTouchInit.x;
+                    mPosYPre = mPtTouchInit.y;
                 }
                 mIsInitMove = false;
-                int iPosX = (int)((event.getX()-mPtTouchInit.x)*mMouseFact);
-                int iPosY = (int)((event.getY()-mPtTouchInit.y)*mMouseFact);
-                int[] iPos = { iPosX, iPosY };
+                int iPosX = 0;
+                int iPosY = 0;
+                if (pointerCount == 2){
+                    double dt = ((double)(System.currentTimeMillis() - mTimeMsPre))/1000;
+                    mTimeMsPre = System.currentTimeMillis();
+                    iPosX = (int) ((event.getX() - mPosXPre)/dt * mScrollFact);
+                    iPosY = (int) ((event.getY() - mPosYPre)/dt * mScrollFact);
+                    mPosXPre = event.getX();
+                    mPosYPre = event.getY();
+                }
+                else if (pointerCount == 1){
+                    iPosX = (int) ((event.getX() - mPtTouchInit.x) * mMouseFact);
+                    iPosY = (int) ((event.getY() - mPtTouchInit.y) * mMouseFact);
+                }
+                int[] iPos = {iPosX, iPosY};
                 if (mMouseEventListener != null) {
-                    mMouseEventListener.onMotion(iPos);
+                    mMouseEventListener.onMotion(iPos, pointerCount);
                 }
 
                 return true;
         }
+
         return super.onTouchEvent(event);
     }
 

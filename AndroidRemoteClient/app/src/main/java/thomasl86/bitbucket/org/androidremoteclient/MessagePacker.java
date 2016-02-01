@@ -76,6 +76,16 @@ public class MessagePacker {
         return bMessage;
     }
 
+    public static  byte[] pack(byte commandType, String stCommand){
+        byte[] bCommand = stCommand.getBytes();
+        byte[] bMessage = new byte[bCommand.length+1];
+        bMessage[0] = commandType;
+        for (int i=1; i<bMessage.length; i++){
+            bMessage[i] = bCommand[i-1];
+        }
+        return bMessage;
+    }
+
 
 }
 

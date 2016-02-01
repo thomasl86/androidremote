@@ -15,7 +15,7 @@ public class Mouse {
 	public static final int BUT_DWN_M 	= Command.MOUSE_BUT_DWN_M;
 	public static final int CMD_MOVE 	= Command.TYPE_MOUSE_MOVE;
 	public static final int CMD_BUTTON 	= Command.TYPE_MOUSE_BUTTON;
-	public static final int CMD_WHEEL 	= Command.TYPE_MOUSE_WHEEL;
+	public static final int CMD_WHEEL 	= Command.TYPE_MOUSE_SCROLL;
 	private Robot mRobot 		= null;
 	private Point mPtLocation 	= new Point(0,0); 
 	
@@ -87,7 +87,7 @@ public class Mouse {
 	 * Positive and negative values are allowed. 
 	 * Negative values indicate movement up/away from the user, positive down/towards the user.
 	 */
-	public void wheel(int wheelAmt){ mRobot.mouseWheel(wheelAmt); }
+	public void scroll(int wheelAmt){ mRobot.mouseWheel(wheelAmt); }
 	
 	/**
 	 * 
