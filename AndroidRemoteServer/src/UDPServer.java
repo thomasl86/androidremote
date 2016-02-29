@@ -19,20 +19,12 @@ public class UDPServer {
 	
 	/* Methods */
 	
-	public boolean init(){
-		boolean boSuccess = false;
+	public void init() throws SocketException {
 
 		//PORT_RCV = port;
 		mBuffer = new byte[65536];
-		try {
-			mSocket = new DatagramSocket(PORT_RCV);
-			mSocket.setBroadcast(true);
-			boSuccess = true;
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}		
-		
-		return boSuccess;
+		mSocket = new DatagramSocket(PORT_RCV);
+		mSocket.setBroadcast(true);
 	}
 	
 	public DatagramPacket receive(){
