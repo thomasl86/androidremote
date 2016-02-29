@@ -274,10 +274,12 @@ public class MainActivity extends ActionBarActivity
                 bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_MOUSE_MOVE, iCommand));
             }
+            /*
             else if(pointerCount == 2){
                 bMessage =
                         MessagePacker.pack(new Command(Command.TYPE_MOUSE_SCROLL, iCommand));
             }
+            */
             if(bMessage != null) {
                 mUDPClient.sendMsg(bMessage);
             }
