@@ -1,7 +1,4 @@
 
-import java.awt.AWTException;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -13,24 +10,23 @@ import joptsimple.OptionSet;
 
 import static java.util.Arrays.*;
 
-public class AndroidRemoteServer implements KeyListener {
+public class AndroidRemoteServer {
 	
 	/* Members */
 	
-	boolean mBoExcKeyPressed = false;
-	ServerThread mServerThread = new ServerThread();
+	static boolean mBoExcKeyPressed = false;
+	static ServerThread mServerThread = new ServerThread();
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		
-		boolean boRunServer = false;
-		
 		OptionParser parser = new OptionParser();
 		parser.acceptsAll( asList("v", "verbose"), "Be more chatty." );
 		parser.acceptsAll( asList("?", "h", "help"), "Show help and exit." );
 		parser.accepts( "ip", "Get the wifi ip address and exit." );
+		parser.accepts("nogui", "Start the server without GUI (in console)");
 		OptionSet optionSet = parser.parse( args );
 		if (optionSet.hasOptions()){
 			// Print the help and exit.
@@ -41,31 +37,38 @@ public class AndroidRemoteServer implements KeyListener {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				boRunServer = false;
 			}
 			// Run the server in verbose mode
 			if (optionSet.has("v") || optionSet.has("verbose")){
 				Printing.setVerbosity(true);
-				boRunServer = true;
+				startServerThread();
 			}
 			// Print the wifi ip address and exit.
 			if (optionSet.has("ip")){
 				System.out.println(getWifiIpAddress());
-				boRunServer = false;
+			}
+			if (optionSet.has("nogui")){
+				startServerThread();
 			}
 		}
 		else{
-			boRunServer = true;
+			new ServerGUI();
 		}
+	}
+	
+	protected static boolean startServerThread(){
 		
-		if (boRunServer){
-			//TODO add code to start the server
-			ServerThread serverThread = new ServerThread();
+		boolean boSuccess = false;
+		if (mServerThread == null){
+			mServerThread = new ServerThread();
+		}
+		if (!mServerThread.isAlive()){
 			String stIpAddress = getWifiIpAddress();
-			short reply = serverThread.init(stIpAddress);
+			short reply = mServerThread.init(stIpAddress);
 			if (reply == 0){
-				serverThread.start();
+				mServerThread.start();
 				Printing.info("Server socket created. Listening on port " + UDPServer.PORT_RCV + "...", 0);
+				boSuccess = true;
 			}
 			else if (reply == -1) {
 				Printing.error("Server socket creation failed. Keyboard class failed to initialize.");
@@ -73,7 +76,22 @@ public class AndroidRemoteServer implements KeyListener {
 			else if (reply == -2) {
 				Printing.error("Server socket creation failed. SocketException.");
 			}
+			else if (reply == -3) {
+				Printing.error("Server socket creation failed. SecurityException.");
+			}
 		}
+		
+		return boSuccess;
+	}
+	
+	protected static void stopServerThread(){
+		if(mServerThread != null){
+			if (mServerThread.isAlive()){
+				mServerThread.close();
+			}
+		}
+		while(mServerThread.isAlive());
+		Printing.info("Server socket closed.", 0);
 	}
 
 	public static String getWifiIpAddress(){
@@ -103,26 +121,5 @@ public class AndroidRemoteServer implements KeyListener {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-		if (e.getID() == KeyEvent.VK_SPACE){
-			mBoExcKeyPressed = true;
-			mServerThread.close();
-			Printing.info("Space key pressed.", 1);
-		}
-		
-	}
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
 	}
 }

@@ -12,7 +12,9 @@ public class Printing {
 	
 	public static void error(String msg)
    	{
-       	System.out.println("ERROR: " + msg);
+		String stMessage = "ERROR: " + msg;
+		ServerGUI.print(stMessage);
+		System.out.println(stMessage);
    	}
 	
 
@@ -25,12 +27,15 @@ public class Printing {
 	*/
 	public static void info(String msg, int verbosity)
 	{
-	   if ((verbosity > 0) && mBoVerbose){
-		   System.out.println("INFO: " + msg);
-	   }
-	   else if(verbosity == 0){
-		   System.out.println("INFO: " + msg);
-	   }
+		String stMessage = "INFO: " + msg;
+		if ((verbosity > 0) && mBoVerbose){
+			ServerGUI.print(stMessage);
+			System.out.println(stMessage);
+		}
+		else if(verbosity == 0){
+			ServerGUI.print(stMessage);
+			System.out.println(stMessage);
+		}
 	}
 	
 	public static void setVerbosity(boolean boVerbose){ mBoVerbose = boVerbose; }

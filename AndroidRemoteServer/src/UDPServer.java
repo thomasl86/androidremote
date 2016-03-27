@@ -27,14 +27,9 @@ public class UDPServer {
 		mSocket.setBroadcast(true);
 	}
 	
-	public DatagramPacket receive(){
+	public DatagramPacket receive() throws SocketException, IOException{
 		DatagramPacket packetIncoming = new DatagramPacket(mBuffer, mBuffer.length);
-		try {
-			mSocket.receive(packetIncoming);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
+		mSocket.receive(packetIncoming);
         return packetIncoming;
 	}
 	
