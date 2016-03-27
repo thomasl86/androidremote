@@ -101,7 +101,7 @@ public class MainActivity extends ActionBarActivity
         }
 
         if(!boSuccess){
-            error("Connection attempt to IP " + mAddress + " failed.", Toast.LENGTH_SHORT);
+            error("Connection attempt to IP " + mAddress + " failed. Is the server running?", Toast.LENGTH_SHORT);
         } else {
             info("Connection to IP " + mAddress + " established.", Toast.LENGTH_SHORT);
         }

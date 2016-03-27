@@ -151,7 +151,9 @@ public class UDPClient {
                 byte[] buffer = new byte[65536];
                 mDp = new DatagramPacket(buffer, buffer.length);
                 boolean abort = false;
+                mSocket.setSoTimeout(1500);
                 while(!abort) {
+
                     mSocket.receive(mDp);
                     if( mDp.getData()[0] == Command.TYPE_SEND_INFO)
                         abort = true;
