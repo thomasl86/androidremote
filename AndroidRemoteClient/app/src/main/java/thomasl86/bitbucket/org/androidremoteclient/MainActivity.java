@@ -3,6 +3,7 @@ package thomasl86.bitbucket.org.androidremoteclient;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -35,16 +36,12 @@ public class MainActivity extends ActionBarActivity
         if(mAddress == null) establishConnection();
 
         // Register listeners
-        Button buttonLeft = (Button) findViewById(R.id.button_left);
-        buttonLeft.setOnClickListener(this);
-        Button buttonRight = (Button) findViewById(R.id.button_right);
-        buttonRight.setOnClickListener(this);
-        Button buttonKeyboard = (Button) findViewById(R.id.button_keyboard_main);
-        buttonKeyboard.setOnClickListener(this);
-        Button buttonUp = (Button) findViewById(R.id.button_up_main);
-        buttonUp.setOnClickListener(this);
-        Button buttonDown = (Button) findViewById(R.id.button_down_main);
-        buttonDown.setOnClickListener(this);
+        findViewById(R.id.button_left).setOnClickListener(this);
+        findViewById(R.id.button_right).setOnClickListener(this);
+        findViewById(R.id.button_keyboard_main).setOnClickListener(this);
+        findViewById(R.id.button_up_main).setOnClickListener(this);
+        findViewById(R.id.button_down_main).setOnClickListener(this);
+        findViewById(R.id.button_hotkeys).setOnClickListener(this);
         MyViewGroup myViewGroup = (MyViewGroup) findViewById(R.id.viewMousePad);
         myViewGroup.setMouseEventListener(this);
 
@@ -110,34 +107,15 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onClick(View v) {
-        switch (v.getId())
-        {
+        switch (v.getId()) {
             case R.id.button_left:
-                if (mUDPClient.isConnected()) {
-                    int[] iCommand = {Command.MOUSE_BUT_DWN_L};
-                    byte[] bMessage =
-                            MessagePacker.pack(new Command(Command.TYPE_MOUSE_BUTTON, iCommand));
-                    mUDPClient.sendMsg(bMessage);
-                }
-                else
-                {
-                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-                }
+                sendCommand(Command.TYPE_MOUSE_BUTTON, Command.MOUSE_BUT_DWN_L);
                 break;
             case R.id.button_right:
-                if (mUDPClient.isConnected()) {
-                    int[] iCommand = {Command.MOUSE_BUT_DWN_R};
-                    byte[] bMessage =
-                            MessagePacker.pack(new Command(Command.TYPE_MOUSE_BUTTON, iCommand));
-                    mUDPClient.sendMsg(bMessage);
-                }
-                else
-                {
-                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-                }
+                sendCommand(Command.TYPE_MOUSE_BUTTON, Command.MOUSE_BUT_DWN_R);
                 break;
             case R.id.button_keyboard_main:
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
                 break;
             case R.id.button_up_main:
@@ -146,6 +124,20 @@ public class MainActivity extends ActionBarActivity
             case R.id.button_down_main:
                 onKeyDown(Command.KB_DOWN, null);
                 break;
+            case R.id.button_hotkeys:
+                Intent intent = new Intent(this, HotkeyActivity.class);
+                startActivity(intent);
+                break;
+        }
+    }
+
+    public void sendCommand(byte type, int... iCommand){
+        if (mUDPClient.isConnected()) {
+            byte[] bMessage =
+                    MessagePacker.pack(new Command(type, iCommand));
+            mUDPClient.sendMsg(bMessage);
+        } else {
+            error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
         }
     }
 
@@ -154,114 +146,42 @@ public class MainActivity extends ActionBarActivity
 
         switch(keyCode){
         case KeyEvent.KEYCODE_VOLUME_UP:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.VOLUME_UP};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_VOLUME, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_VOLUME, Command.VOLUME_UP);
             return true;
         case KeyEvent.KEYCODE_VOLUME_DOWN:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.VOLUME_DOWN};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_VOLUME, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_VOLUME, Command.VOLUME_DOWN);
             return true;
         case KeyEvent.KEYCODE_DEL:
-            if (mUDPClient.isConnected()) {
-                int unicodeChar = '\b';
-                int[] iCommand = {unicodeChar};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, '\b');
             return true;
         case Command.KB_UP:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.KB_UP};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, Command.KB_UP);
             return true;
         case Command.KB_DOWN:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.KB_DOWN};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, Command.KB_DOWN);
             return true;
         case Command.KB_LEFT:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.KB_LEFT};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, Command.KB_LEFT);
             return true;
         case Command.KB_RIGHT:
-            if (mUDPClient.isConnected()) {
-                int[] iCommand = {Command.KB_RIGHT};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, Command.KB_RIGHT);
             return true;
             case Command.KB_HOME:
-                if (mUDPClient.isConnected()) {
-                    int[] iCommand = {Command.KB_HOME};
-                    byte[] bMessage =
-                            MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                    mUDPClient.sendMsg(bMessage);
-                } else {
-                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-                }
+                sendCommand(Command.TYPE_KB, Command.KB_HOME);
                 return true;
             case Command.KB_END:
-                if (mUDPClient.isConnected()) {
-                    int[] iCommand = {Command.KB_END};
-                    byte[] bMessage =
-                            MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                    mUDPClient.sendMsg(bMessage);
-                } else {
-                    error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-                }
+                sendCommand(Command.TYPE_KB, Command.KB_END);
                 return true;
         case KeyEvent.KEYCODE_BACK:
             return super.onKeyDown(keyCode, event);
         default:
-            if (mUDPClient.isConnected()) {
-                int unicodeChar = event.getUnicodeChar();
-                int[] iCommand = {unicodeChar};
-                byte[] bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_KB, iCommand));
-                mUDPClient.sendMsg(bMessage);
-            } else {
-                error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
-            }
+            sendCommand(Command.TYPE_KB, event.getUnicodeChar());
             return true;
         }
 
     }
 
-    public void onKeyboardModifierDown(int keycode) {
+    public void onShortcut(int keycode, int... modifiers) {
 
     }
 
@@ -283,8 +203,6 @@ public class MainActivity extends ActionBarActivity
             if(bMessage != null) {
                 mUDPClient.sendMsg(bMessage);
             }
-        } else {
-            error("Not connected to IP " + mAddress + ".", Toast.LENGTH_LONG);
         }
     }
 

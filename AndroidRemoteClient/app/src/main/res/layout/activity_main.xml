@@ -49,6 +49,31 @@
                 android:layout_weight="0.30" />
         </LinearLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="52dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hotkeys"
+                    android:id="@+id/button_hotkeys" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"></RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"></RelativeLayout>
+        </LinearLayout>
+
         <thomasl86.bitbucket.org.androidremoteclient.MyViewGroup
             android:layout_width="wrap_content"
             android:layout_height="345dp"

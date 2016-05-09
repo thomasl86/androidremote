@@ -10,11 +10,12 @@ public class ServerThread extends Thread implements Runnable {
 	
 	/* Members */
 
-	private UDPServer mServer = null;
-	private Keyboard mKeyboard = null;
-	private boolean mBoStop = false;
-	private String mStIpAddress = null;
-	private int mVerbosity = 0;
+	private UDPServer 	mServer 		= null;
+	private Keyboard 	mKeyboard 		= null;
+	private Hotkey 		mHotkey			= null;
+	private boolean 	mBoStop 		= false;
+	private String 		mStIpAddress 	= null;
+	private int 		mVerbosity 		= 0;
 	
 	
 	/* Constructors */
@@ -44,6 +45,7 @@ public class ServerThread extends Thread implements Runnable {
 		try {
 			mServer.init();
 			mKeyboard = new Keyboard();
+			mHotkey = new Hotkey();
 		} catch (AWTException e) {
 			shSuccess = -1;
 		}catch (SocketException e){
@@ -121,7 +123,7 @@ public class ServerThread extends Thread implements Runnable {
 					media.volume(command.mCommand[0]);
 					break;
 				case Command.TYPE_KB:
-					if (!mKeyboard.type((char)command.mCommand[0])){
+					if (!mKeyboard.type((char)command.mCommand[0], null)){
 						Printing.error("Key not found.");
 					}
 					else{
@@ -148,6 +150,14 @@ public class ServerThread extends Thread implements Runnable {
 					else
 						Printing.error("Server info sending failed.");
 					break;
+				case Command.TYPE_HOTKEY:
+					Printing.info("Hotkey pressed.", 1);
+					try {
+						mHotkey.setHotkey(command.mCommand);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						Printing.error("IOException while trying apply hotkey.");
+					}
 				}
 			}
 		}
