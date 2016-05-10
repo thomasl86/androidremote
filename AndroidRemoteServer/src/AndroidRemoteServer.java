@@ -87,9 +87,15 @@ public class AndroidRemoteServer {
 	protected static void stopServerThread(){
 		if(mServerThread != null){
 			if (mServerThread.isAlive()){
-				mServerThread.close();
+				try {
+					mServerThread.close();
+					
+				} catch (SocketException e) {
+					Printing.error("SocketException while closing port.");
+				}
 			}
 		}
+		// Waiting until the server thread has shut down
 		while(mServerThread.isAlive());
 		Printing.info("Server socket closed.", 0);
 	}

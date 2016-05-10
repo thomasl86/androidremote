@@ -77,11 +77,8 @@ public class MainActivity extends ActionBarActivity
         //Broadcast a message to the network requesting the server IP
         int[] iCommand = {0};
         byte[] bMessage = MessagePacker.pack(new Command(Command.TYPE_SEND_INFO, iCommand));
-        if(UDPClient.sendBroadcastMsg(bMessage)) {
-            info("Broadcast message was sent.", Toast.LENGTH_SHORT);
-        }
-        else{
-            info("Broadcast message was NOT sent.", Toast.LENGTH_SHORT);
+        if(!UDPClient.sendBroadcastMsg(bMessage)) {
+            error("Broadcast message cound NOT be sent.", Toast.LENGTH_SHORT);
         }
 
         boolean boReceived = false;
@@ -93,14 +90,9 @@ public class MainActivity extends ActionBarActivity
         if (mAddress != null) {
             boSuccess = mUDPClient.connect(mAddress);
         }
-        else{
-            error("Could not find the server.",Toast.LENGTH_SHORT);
-        }
 
-        if(!boSuccess){
-            error("Connection attempt to IP " + mAddress + " failed. Is the server running?", Toast.LENGTH_SHORT);
-        } else {
-            info("Connection to IP " + mAddress + " established.", Toast.LENGTH_SHORT);
+        if(!boSuccess) {
+            error("Connection attempt failed. Is the server running?", Toast.LENGTH_SHORT);
         }
         return boSuccess;
     }

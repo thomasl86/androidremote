@@ -43,11 +43,15 @@ public class Hotkey {
 			break;
 		case Command.HK_SHUTDOWN:
 			if (osId == OsDetection.OS_NIX){
-				Runtime.getRuntime().exec("shutdown -H now");
+				Runtime.getRuntime().exec("shutdown -h now");
 			}
 			break;
 		case Command.HK_SEARCHBAR:
-			keyboard.type((char)Command.KB_SUPER, null);
+			if (osId == OsDetection.OS_NIX){
+				Runtime.getRuntime().exec("xdotool key super");
+			} else {
+				keyboard.type((char)Command.KB_SUPER, null);
+			}
 			break;
 		case Command.HK_MUTE:
 			if (osId == OsDetection.OS_NIX){

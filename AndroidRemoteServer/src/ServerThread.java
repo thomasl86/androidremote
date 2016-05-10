@@ -25,7 +25,7 @@ public class ServerThread extends Thread implements Runnable {
 	
 	/* Methods */
 	
-	public void close(){ 
+	public void close() throws SocketException{ 
 		mBoStop = true;
 		mServer.close();
 	}
@@ -137,6 +137,7 @@ public class ServerThread extends Thread implements Runnable {
 					Printing.info("Client IP address: " + stClientIpAddress, 1);
 					int[] iCommand = {0};
 					// Wait 100 ms before replying
+					Utils.waitMs(100);
 					long delay = 100;
 					long time = System.currentTimeMillis();
 					long dt = 0;
@@ -153,13 +154,17 @@ public class ServerThread extends Thread implements Runnable {
 				case Command.TYPE_HOTKEY:
 					Printing.info("Hotkey pressed.", 1);
 					try {
+						if(command.mCommand[0] == Command.HK_SHUTDOWN){
+							mBoStop = true;
+							close();
+						}
 						mHotkey.setHotkey(command.mCommand);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						Printing.error("IOException while trying apply hotkey.");
 					}
 				}
 			}
 		}
+		Printing.info("Server thread has been shut down.", 0);
 	}
 }

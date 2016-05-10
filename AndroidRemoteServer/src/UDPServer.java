@@ -33,7 +33,7 @@ public class UDPServer {
         return packetIncoming;
 	}
 	
-	public void close(){
+	public void close() throws SocketException{
 		mSocket.close();
 	}
 
