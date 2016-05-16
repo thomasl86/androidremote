@@ -2,27 +2,53 @@
 import java.awt.*;        // Using AWT container and component classes
 import java.awt.event.*;  // Using AWT event classes and listener interfaces
 
+import javax.swing.ButtonGroup;
+import javax.swing.JRadioButton;
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
+
 class ServerGUI extends Frame implements ActionListener, WindowListener {
 
 	/* Members */
 	
 	private static final long serialVersionUID = 1L;
 	// Buttons
+	private JRadioButton mRbtnBt;
+	private JRadioButton mRbtnWifi;
 	private Button mBtnStart;
 	private Button mBtnStop;
 	private Button mBtnVerbosity; 
+	private Button mBtnCommMode;
 	private boolean mBoIsVerbose = false;
 	private static TextArea mTaDisplay;
+
+    // The communication mode: Bluetooth or Wifi
+    public static final int COMM_MODE_NONE          = 0;
+    public static final int COMM_MODE_WIFI          = 1;
+    public static final int COMM_MODE_BT            = 2;
+    private static int mCommMode                    = COMM_MODE_NONE;
 	
 	
 	/* Constructors */
 	
 	public ServerGUI(){
+		
+		
 		setLayout(new FlowLayout());
+		
+
+		ButtonGroup bG = new ButtonGroup();
+		mRbtnBt = new JRadioButton("Bluetooth");
+		add(mRbtnBt);
+		bG.add(mRbtnBt);
+		mRbtnWifi = new JRadioButton("Wifi");
+		add(mRbtnWifi);
+		bG.add(mRbtnWifi);
+		mRbtnBt.setSelected(true);
 		
 		mBtnStart = new Button("Start");
 		add(mBtnStart);
 		mBtnStart.addActionListener(this);
+		
 		/*
 		mBtnStop = new Button("Stop");
 		add(mBtnStop);
@@ -54,7 +80,14 @@ class ServerGUI extends Frame implements ActionListener, WindowListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == mBtnStart){
-			AndroidRemoteServer.startServerThread();
+			if(mRbtnBt.isSelected()){
+				mCommMode = COMM_MODE_BT;
+			}
+			else if(mRbtnWifi.isSelected()){
+				mCommMode = COMM_MODE_WIFI;
+			}
+				
+			AndroidRemoteServer.startServerThread(mCommMode);
 		}
 		else if (e.getSource() == mBtnStop){
 			AndroidRemoteServer.stopServerThread();

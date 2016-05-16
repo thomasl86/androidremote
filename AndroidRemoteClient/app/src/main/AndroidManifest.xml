@@ -3,8 +3,11 @@
     package="thomasl86.bitbucket.org.androidremoteclient" >
 
     <uses-permission
-        android:name="android.permission.INTERNET">
-    </uses-permission>
+        android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH" />
 
     <application
         android:allowBackup="true"
@@ -30,6 +33,18 @@
             android:name=".HotkeyActivity"
             android:label="@string/app_name"
             />
+
+        <activity
+            android:name=".BtDeviceListActivity"
+            android:label="Select a device to connect"
+            android:theme="@android:style/Theme.Dialog"
+            android:configChanges="orientation|keyboardHidden" />
+
+        <activity
+            android:name=".ConnectionActivity"
+            android:label="Select a connection mode"
+            android:theme="@android:style/Theme.Dialog"
+            android:configChanges="orientation|keyboardHidden" />
     </application>
 
 </manifest>

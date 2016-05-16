@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Created by thomas on 30.12.15.
  */
-public class UDPClient {
+public class WifiCommService {
 
 
     // Members
@@ -56,7 +56,7 @@ public class UDPClient {
         return hostIpAddress;
     }
 
-    public boolean sendMsg(String stMessage)
+    public boolean write(String stMessage)
     {
         byte[] bMessage = stMessage.getBytes();
         final DatagramPacket dp = new DatagramPacket(bMessage , bMessage.length , mHost , PORT_SND);
@@ -66,7 +66,7 @@ public class UDPClient {
         return msgSendThread.success();
     }
 
-    public boolean sendMsg(byte[] bMessage)
+    public boolean write(byte[] bMessage)
     {
         final DatagramPacket dp = new DatagramPacket(bMessage , bMessage.length , mHost , PORT_SND);
         MsgSendThread msgSendThread = new MsgSendThread(dp, mSock);
@@ -103,6 +103,7 @@ public class UDPClient {
     public boolean isConnected() { return mIsConnected; }
 
 
+    //TODO Consider keeping this thread running and using a Handler to transmit data from other activities
     static class MsgSendThread extends Thread implements Runnable
     {
 

@@ -6,7 +6,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 
-public class UDPServer {
+public class WifiCommService {
 	
 	
 	/* Members */

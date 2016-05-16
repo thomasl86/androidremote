@@ -1,7 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/action_connect" android:title="Connect"
+    <item android:id="@+id/action_choose_mode" android:title="Choose connection method"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_connect_bt" android:title="Connect Bluetooth"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_scan_bt" android:title="Scan for BT devices"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_connect_wifi" android:title="Connect Wifi"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_keyboard" android:title="Keyboard"
         android:orderInCategory="100" app:showAsAction="never" />

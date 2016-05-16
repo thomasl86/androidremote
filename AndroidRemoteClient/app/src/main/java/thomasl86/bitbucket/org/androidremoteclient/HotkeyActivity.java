@@ -33,16 +33,16 @@ public class HotkeyActivity extends MainActivity
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.button_new_pr_win:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_NEW_PR_WIN);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_PR_WIN);
                 break;
             case R.id.button_new_win:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_NEW_WIN);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_WIN);
                 break;
             case R.id.button_new_tab:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_NEW_TAB);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_TAB);
                 break;
             case R.id.button_close_tab:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_CLOSE_TAB);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_CLOSE_TAB);
                 break;
             case R.id.button_shutdown:
                 boolean doShutdown;
@@ -55,13 +55,13 @@ public class HotkeyActivity extends MainActivity
                 dialog.show();
                 break;
             case R.id.button_searchbar:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_SEARCHBAR);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_SEARCHBAR);
                 break;
             case R.id.button_mute:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_MUTE);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_MUTE);
                 break;
             case R.id.button_close_win:
-                super.sendCommand(Command.TYPE_HOTKEY, Command.HK_CLOSE_WIN);
+                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_CLOSE_WIN);
                 break;
         }
     }
@@ -75,6 +75,6 @@ public class HotkeyActivity extends MainActivity
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == DialogInterface.BUTTON_POSITIVE)
-            super.sendCommand(Command.TYPE_HOTKEY, Command.HK_SHUTDOWN);
+            super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_SHUTDOWN);
     }
 }
