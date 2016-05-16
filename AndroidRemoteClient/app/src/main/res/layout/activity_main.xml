@@ -74,7 +74,7 @@
                 android:layout_height="match_parent"></RelativeLayout>
         </LinearLayout>
 
-        <thomasl86.bitbucket.org.androidremoteclient.MyViewGroup
+        <thomasl86.bitbucket.org.androidremoteclient.MousepadViewGroup
             android:layout_width="wrap_content"
             android:layout_height="345dp"
             android:id="@+id/viewMousePad"

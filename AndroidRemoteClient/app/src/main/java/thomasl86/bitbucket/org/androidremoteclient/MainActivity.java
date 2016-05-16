@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
@@ -17,47 +18,57 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
 public class MainActivity extends ActionBarActivity
-        implements View.OnClickListener, MyViewGroup.MouseEventListener {
+        implements View.OnClickListener, MousepadViewGroup.MouseEventListener,
+        HotkeyViewGroup.HotkeyListener {
 
 
     /* Members */
 
     private static WifiCommService mWifiCommService = null;
-    private String mAddress                         = null;
-    private Point mPtTouchInit                      = new Point(0, 0);
-    private double mMouseFact                       = 3;
-    private boolean mIsKbOpen                       = false;
-    private BluetoothAdapter mBluetoothAdapter      = null;
-    private static BtCommService mBtCommService     = null;
-    private static BluetoothDevice mBtDevice        = null;
+    private String mAddress = null;
+    private Point mPtTouchInit = new Point(0, 0);
+    private double mMouseFact = 3;
+    private boolean mIsKbOpen = false;
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private static BtCommService mBtCommService = null;
+    private static BluetoothDevice mBtDevice = null;
 
     // Name of the connected device
-    private String mConnectedDeviceName             = null;
+    private String mConnectedDeviceName = null;
 
     // The communication mode: Bluetooth or Wifi
-    public static final int COMM_MODE_NONE          = 0;
-    public static final int COMM_MODE_WIFI          = 1;
-    public static final int COMM_MODE_BT            = 2;
-    private int mCommMode                           = COMM_MODE_NONE;
+    public static final int COMM_MODE_NONE = 0;
+    public static final int COMM_MODE_WIFI = 1;
+    public static final int COMM_MODE_BT = 2;
+    private int mCommMode = COMM_MODE_NONE;
 
     // Message types sent from the BluetoothChatService Handler
-    public static final int MESSAGE_STATE_CHANGE    = 1;
-    public static final int MESSAGE_READ            = 2;
-    public static final int MESSAGE_WRITE           = 3;
-    public static final int MESSAGE_DEVICE_NAME     = 4;
-    public static final int MESSAGE_TOAST           = 5;
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
 
     private static final int REQUEST_CONNECT_DEVICE = 1;
-    private static final int REQUEST_COMM_MODE      = 2;
+    private static final int REQUEST_COMM_MODE = 2;
 
-    public static final String STR_DEVICE_NAME      = "device_name";
-    public static final String STR_TOAST            = "toast";
+    public static final String STR_DEVICE_NAME = "device_name";
+    public static final String STR_TOAST = "toast";
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
 
     /* Methods */
@@ -76,8 +87,10 @@ public class MainActivity extends ActionBarActivity
         findViewById(R.id.button_up_main).setOnClickListener(this);
         findViewById(R.id.button_down_main).setOnClickListener(this);
         findViewById(R.id.button_hotkeys).setOnClickListener(this);
-        MyViewGroup myViewGroup = (MyViewGroup) findViewById(R.id.viewMousePad);
-        myViewGroup.setMouseEventListener(this);
+        MousepadViewGroup mousepadViewGroup = (MousepadViewGroup) findViewById(R.id.viewMousePad);
+        mousepadViewGroup.setMouseEventListener(this);
+        HotkeyViewGroup hotkeyViewGroup = (HotkeyViewGroup) findViewById(R.id.linear_layout_hotkey);
+        hotkeyViewGroup.setHotkeyListener(this);
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -86,8 +99,32 @@ public class MainActivity extends ActionBarActivity
         if (mBluetoothAdapter == null) {
             error("Bluetooth is not available", Toast.LENGTH_LONG);
         }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
 
         establishConnection();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://thomasl86.bitbucket.org.androidremoteclient/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
     @Override
@@ -129,17 +166,17 @@ public class MainActivity extends ActionBarActivity
 
     private void establishConnection() {
 
-        if(mCommMode == COMM_MODE_NONE){
+        if (mCommMode == COMM_MODE_NONE) {
             Intent connectionIntent = new Intent(this, ConnectionActivity.class);
             startActivityForResult(connectionIntent, REQUEST_COMM_MODE);
         }
     }
 
-    private boolean establishConnectionWifi(){
+    private boolean establishConnectionWifi() {
         //Broadcast a message to the network requesting the server IP
         int[] iCommand = {0};
         byte[] bMessage = MessagePacker.pack(new Command(Command.TYPE_SEND_INFO, iCommand));
-        if(!WifiCommService.sendBroadcastMsg(bMessage)) {
+        if (!WifiCommService.sendBroadcastMsg(bMessage)) {
             error("Broadcast message could0 NOT be sent.", Toast.LENGTH_SHORT);
         }
 
@@ -153,15 +190,15 @@ public class MainActivity extends ActionBarActivity
             boSuccess = mWifiCommService.connect(mAddress);
         }
 
-        if(!boSuccess) {
+        if (!boSuccess) {
             error("Connection attempt failed. Is the server running?", Toast.LENGTH_SHORT);
         }
         return boSuccess;
     }
 
-    private void establishConnectionBt(){
+    private void establishConnectionBt() {
         // Initialize the BluetoothChatService to perform bluetooth connections
-        if(mBtCommService == null) {
+        if (mBtCommService == null) {
             mBtCommService = new BtCommService(mHandler);
             // Launch the DeviceListActivity to see devices and do scan
             Intent serverIntent = new Intent(this, BtDeviceListActivity.class);
@@ -174,7 +211,7 @@ public class MainActivity extends ActionBarActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch(requestCode){
+        switch (requestCode) {
             case REQUEST_CONNECT_DEVICE:
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
@@ -188,10 +225,10 @@ public class MainActivity extends ActionBarActivity
                 }
                 break;
             case REQUEST_COMM_MODE:
-                if (resultCode == Activity.RESULT_OK){
+                if (resultCode == Activity.RESULT_OK) {
                     mCommMode = data.getExtras().getInt(ConnectionActivity.STR_COMM_MODE);
 
-                    switch(mCommMode){
+                    switch (mCommMode) {
                         case COMM_MODE_BT:
                             establishConnectionBt();
                             break;
@@ -204,6 +241,7 @@ public class MainActivity extends ActionBarActivity
                 break;
         }
     }
+
 
     @Override
     public void onClick(View v) {
@@ -241,41 +279,46 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
+    public void onHotkey(byte type, int... command) {
+        sendCommand(true, type, command);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-        switch(keyCode){
-        case KeyEvent.KEYCODE_VOLUME_UP:
-            sendCommand(true, Command.TYPE_VOLUME, Command.VOLUME_UP);
-            return true;
-        case KeyEvent.KEYCODE_VOLUME_DOWN:
-            sendCommand(true, Command.TYPE_VOLUME, Command.VOLUME_DOWN);
-            return true;
-        case KeyEvent.KEYCODE_DEL:
-            sendCommand(true, Command.TYPE_KB, '\b');
-            return true;
-        case Command.KB_UP:
-            sendCommand(true, Command.TYPE_KB, Command.KB_UP);
-            return true;
-        case Command.KB_DOWN:
-            sendCommand(true, Command.TYPE_KB, Command.KB_DOWN);
-            return true;
-        case Command.KB_LEFT:
-            sendCommand(true, Command.TYPE_KB, Command.KB_LEFT);
-            return true;
-        case Command.KB_RIGHT:
-            sendCommand(true, Command.TYPE_KB, Command.KB_RIGHT);
-            return true;
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                sendCommand(true, Command.TYPE_VOLUME, Command.VOLUME_UP);
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                sendCommand(true, Command.TYPE_VOLUME, Command.VOLUME_DOWN);
+                return true;
+            case KeyEvent.KEYCODE_DEL:
+                sendCommand(true, Command.TYPE_KB, '\b');
+                return true;
+            case Command.KB_UP:
+                sendCommand(true, Command.TYPE_KB, Command.KB_UP);
+                return true;
+            case Command.KB_DOWN:
+                sendCommand(true, Command.TYPE_KB, Command.KB_DOWN);
+                return true;
+            case Command.KB_LEFT:
+                sendCommand(true, Command.TYPE_KB, Command.KB_LEFT);
+                return true;
+            case Command.KB_RIGHT:
+                sendCommand(true, Command.TYPE_KB, Command.KB_RIGHT);
+                return true;
             case Command.KB_HOME:
                 sendCommand(true, Command.TYPE_KB, Command.KB_HOME);
                 return true;
             case Command.KB_END:
                 sendCommand(true, Command.TYPE_KB, Command.KB_END);
                 return true;
-        case KeyEvent.KEYCODE_BACK:
-            return super.onKeyDown(keyCode, event);
-        default:
-            sendCommand(true, Command.TYPE_KB, event.getUnicodeChar());
-            return true;
+            case KeyEvent.KEYCODE_BACK:
+                return super.onKeyDown(keyCode, event);
+            default:
+                sendCommand(true, Command.TYPE_KB, event.getUnicodeChar());
+                return true;
         }
 
     }
@@ -306,10 +349,9 @@ public class MainActivity extends ActionBarActivity
     public void onDown(int pointerCount) {
         int[] iCommand = {0, 0};
         byte[] bMessage = null;
-        if(pointerCount == 1) {
+        if (pointerCount == 1) {
             sendCommand(true, Command.TYPE_MOUSE_MOVE_INIT, iCommand);
-        }
-        else if(pointerCount == 2){
+        } else if (pointerCount == 2) {
             sendCommand(true, Command.TYPE_MOUSE_SCROLL_INIT, iCommand);
         }
     }
@@ -321,13 +363,13 @@ public class MainActivity extends ActionBarActivity
         //TODO save app variables such as communication mode (mCommMode)
     }
 
-    public void sendCommand(boolean errorMsg, byte type, int... iCommand){
+    public void sendCommand(boolean errorMsg, byte type, int... iCommand) {
         boolean isConnected = false;
         boolean isListening = false;
         int state = 0;
         byte[] bMessage =
                 MessagePacker.pack(new Command(type, iCommand));
-        switch (mCommMode){
+        switch (mCommMode) {
             case COMM_MODE_WIFI:
                 isConnected = mWifiCommService.isConnected();
                 if (isConnected) {
@@ -337,7 +379,7 @@ public class MainActivity extends ActionBarActivity
             case COMM_MODE_BT:
                 state = mBtCommService.getState();
                 isConnected = (state == BtCommService.STATE_CONNECTED);
-                if(isConnected){
+                if (isConnected) {
                     mBtCommService.write(bMessage);
                 }
                 break;
@@ -386,16 +428,16 @@ public class MainActivity extends ActionBarActivity
         }
     };
 
-    public void error(String stError, int length){
+    public void error(String stError, int length) {
         Toast.makeText(this, "ERROR: " + stError, length).show();
     }
 
-    public void info(String stInfo, int length){
+    public void info(String stInfo, int length) {
         Toast.makeText(this, "INFO: " + stInfo, length).show();
     }
 
 
-    private static String getWifiIpAddress(){
+    private static String getWifiIpAddress() {
         Enumeration<NetworkInterface> networkInterfaces = null;
         try {
             networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -404,13 +446,12 @@ public class MainActivity extends ActionBarActivity
             e.printStackTrace();
         }
         // Find the wifi interface by going through all available interfaces
-        if (networkInterfaces != null){
-            while (networkInterfaces.hasMoreElements())
-            {
+        if (networkInterfaces != null) {
+            while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) networkInterfaces.nextElement();
-                if (networkInterface.getName().startsWith("wlan")){
+                if (networkInterface.getName().startsWith("wlan")) {
                     Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                    while(inetAddresses.hasMoreElements()){
+                    while (inetAddresses.hasMoreElements()) {
                         InetAddress inetAddress = inetAddresses.nextElement();
                         String stInetAddress = IPAddress.asString(inetAddress.getAddress());
                         if (stInetAddress != null) return stInetAddress;
@@ -420,5 +461,25 @@ public class MainActivity extends ActionBarActivity
             }
         }
         return null;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://thomasl86.bitbucket.org.androidremoteclient/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 }

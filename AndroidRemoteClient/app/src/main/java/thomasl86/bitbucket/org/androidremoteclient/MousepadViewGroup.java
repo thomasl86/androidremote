@@ -4,16 +4,13 @@ import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import java.util.jar.Attributes;
 
 /**
  * Created by thomas on 03.01.16.
  */
-public class MyViewGroup extends ViewGroup {
+public class MousepadViewGroup extends ViewGroup {
 
 
     /* Members */
@@ -32,16 +29,16 @@ public class MyViewGroup extends ViewGroup {
 
     /* Constructors */
 
-    public MyViewGroup(Context context){
+    public MousepadViewGroup(Context context){
         super(context);
         mContext = context;
     }
 
-    public MyViewGroup(Context context, AttributeSet attrs) {
+    public MousepadViewGroup(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MyViewGroup(Context context, AttributeSet attrs, int defStyle) {
+    public MousepadViewGroup(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mContext = context;
     }
