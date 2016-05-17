@@ -18,6 +18,7 @@ public class Command {
     public static final byte TYPE_VOLUME        	= 6;
     public static final byte TYPE_SEND_INFO 		= 7;
     public static final byte TYPE_HOTKEY            = 8;
+    public static final byte TYPE_CLIENT_STATE		= 9;
 
     public static final int MOUSE_BUT_DWN_L 		= 10;
     public static final int MOUSE_BUT_DWN_R 		= 11;
@@ -41,6 +42,7 @@ public class Command {
     public static final int HK_CLOSE_TAB            = 45;
     public static final int HK_SEARCHBAR            = 46;
     public static final int HK_CLOSE_WIN            = 47;
+    public static final int CLIENT_PAUSED			= 1020;
 
     public byte mType = -1;
     public int[] mCommand = null;

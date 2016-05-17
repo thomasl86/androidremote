@@ -1,16 +1,8 @@
 import java.awt.AWTException;
 import java.awt.Point;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.SocketException;
-
-import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.LocalDevice;
-import javax.bluetooth.UUID;
-import javax.microedition.io.Connector;
-import javax.microedition.io.StreamConnection;
-import javax.microedition.io.StreamConnectionNotifier;
 
 
 public class ServerThread extends Thread implements Runnable {
@@ -176,13 +168,28 @@ public class ServerThread extends Thread implements Runnable {
 			/* Code specific for Bluetooth communication */
 			else if (mCommMode == COMM_MODE_BT){
 				byte[] bMessage = null;
+				
 				try {
 					bMessage = mBtCommService.receive();
 				} catch (IOException e) {
 					Printing.error("Receiving failed.");
 					e.printStackTrace();
 				}
+				
 				command = MessagePacker.unpack(bMessage);
+				
+				if (command.mType == Command.TYPE_CLIENT_STATE){
+					if (command.mCommand[0] == Command.CLIENT_PAUSED){
+						Printing.info("Connection lost.", 0);
+						try {
+							mBtCommService.close();
+							mBtCommService.init();
+						} catch (IOException e) {
+							Printing.error("Re-connecting failed.");
+							e.printStackTrace();
+						}
+					}
+				}
 			}
 			if (command != null){
 				switch(command.mType){

@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +28,11 @@ public class MainActivity extends ActionBarActivity
 
 
     /* Members */
+    //==============================================================================================
+
+    // Debugging
+    private static final String TAG = "MainActivity";
+    private static final boolean D = true;
 
     private static WifiCommService mWifiCommService = null;
     private String mAddress                         = null;
@@ -39,6 +45,7 @@ public class MainActivity extends ActionBarActivity
 
     // Name of the connected device
     private String mConnectedDeviceName             = null;
+    private String mConnectedDeviceAddress          = null;
 
     // The communication mode: Bluetooth or Wifi
     public static final int COMM_MODE_NONE          = 0;
@@ -55,19 +62,34 @@ public class MainActivity extends ActionBarActivity
 
     private static final int REQUEST_CONNECT_DEVICE = 1;
     private static final int REQUEST_COMM_MODE      = 2;
+    private static final int REQUEST_HOTKEY         = 3;
 
     public static final String STR_DEVICE_NAME      = "device_name";
     public static final String STR_TOAST            = "toast";
+    public static final String STR_DATA_STRINGS     = "BluetoothCommDataStrings";
+    public static final String STR_DATA_INTEGERS    = "BluetoothCommDataIntegers";
+
+    // Objects for serializing and saving data to memory
+    private SaveRead<String[]> mSaveReadBtCommStr   = new SaveRead<>();
+    private SaveRead<int[]> mSaveReadBtCommInt      = new SaveRead<>();
 
 
     /* Methods */
+    //==============================================================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (D) Log.d(TAG, "onCreate() called.");
+
         //if(mAddress == null) establishConnectionWifi();
+
+        if(savedInstanceState != null) {
+            mConnectedDeviceAddress = savedInstanceState.getString("mConnectedDeviceAddress");
+            mConnectedDeviceName = savedInstanceState.getString("mConnectedDeviceName");
+        }
 
         // Register listeners
         findViewById(R.id.button_left).setOnClickListener(this);
@@ -86,9 +108,28 @@ public class MainActivity extends ActionBarActivity
         if (mBluetoothAdapter == null) {
             error("Bluetooth is not available", Toast.LENGTH_LONG);
         }
-
-        establishConnection();
     }
+
+
+    @Override
+    protected void onStart() {
+        if (D) Log.d(TAG, "onStart() called.");
+        super.onStart();
+
+        // Load the data serialized in onStop()
+        String[] dataStrings = mSaveReadBtCommStr.readFile(this, STR_DATA_STRINGS);
+        if (dataStrings != null) {
+            mConnectedDeviceAddress = dataStrings[0];
+            mConnectedDeviceName = dataStrings[1];
+        }
+        int[] dataInts = mSaveReadBtCommInt.readFile(this, STR_DATA_INTEGERS);
+        if (dataInts != null) {
+            mCommMode = dataInts[0];
+        }
+
+        establishConnection(mCommMode);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -96,6 +137,7 @@ public class MainActivity extends ActionBarActivity
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -105,12 +147,14 @@ public class MainActivity extends ActionBarActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.action_choose_mode:
-                establishConnection();
+                establishConnection(mCommMode);
                 return true;
             case R.id.action_connect_bt:
                 establishConnectionBt();
                 return true;
             case R.id.action_scan_bt:
+                // Tell server to cut connection
+                sendCommand(false, Command.TYPE_CLIENT_STATE, Command.CLIENT_PAUSED);
                 // Launch the DeviceListActivity to see devices and do scan
                 Intent serverIntent = new Intent(this, BtDeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
@@ -127,13 +171,26 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void establishConnection() {
 
-        if(mCommMode == COMM_MODE_NONE){
+    private void establishConnection(int commMode) {
+
+        if (D) Log.d(TAG, "establishConnection() called.");
+
+        if(commMode == COMM_MODE_NONE){
+            if (D) Log.d(TAG, "commMode == COMM_MODE_NONE");
             Intent connectionIntent = new Intent(this, ConnectionActivity.class);
             startActivityForResult(connectionIntent, REQUEST_COMM_MODE);
         }
+        else if(commMode == COMM_MODE_BT){
+            if (D) Log.d(TAG, "commMode == COMM_MODE_BT");
+            establishConnectionBt();
+        }
+        else if(commMode == COMM_MODE_WIFI){
+            if (D) Log.d(TAG, "commMode == COMM_MODE_WIFI");
+            establishConnectionWifi();
+        }
     }
+
 
     private boolean establishConnectionWifi(){
         //Broadcast a message to the network requesting the server IP
@@ -159,16 +216,25 @@ public class MainActivity extends ActionBarActivity
         return boSuccess;
     }
 
+
     private void establishConnectionBt(){
         // Initialize the BluetoothChatService to perform bluetooth connections
-        if(mBtCommService == null) {
-            mBtCommService = new BtCommService(mHandler);
+        mBtCommService = new BtCommService(mHandler);
+
+        if(mConnectedDeviceAddress == null) {
             // Launch the DeviceListActivity to see devices and do scan
             Intent serverIntent = new Intent(this, BtDeviceListActivity.class);
             startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
-
+            if (D) Log.d(TAG, "BtDeviceListActivity started.");
+        }
+        else {
+            // Get the BLuetoothDevice object
+            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mConnectedDeviceAddress);
+            // Attempt to connect to the device
+            mBtCommService.connect(device);
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -176,11 +242,13 @@ public class MainActivity extends ActionBarActivity
 
         switch(requestCode){
             case REQUEST_CONNECT_DEVICE:
+                if (D) Log.d(TAG, "Case REQUEST_CONNECT_DEVICE entered.");
                 // When DeviceListActivity returns with a device to connect
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
                     String address = data.getExtras()
                             .getString(BtDeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    mConnectedDeviceAddress = address;
                     // Get the BLuetoothDevice object
                     BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
                     // Attempt to connect to the device
@@ -202,8 +270,16 @@ public class MainActivity extends ActionBarActivity
 
                 }
                 break;
+            case REQUEST_HOTKEY:
+                if (resultCode == Activity.RESULT_OK){
+                    byte type = data.getExtras().getByte(HotkeyActivity.STR_COMM_TYPE);
+                    int command = data.getExtras().getInt(HotkeyActivity.STR_COMMAND);
+                    sendCommand(true, type, command);
+                }
+                break;
         }
     }
+
 
     @Override
     public void onClick(View v) {
@@ -229,7 +305,7 @@ public class MainActivity extends ActionBarActivity
                 break;
             case R.id.button_hotkeys:
                 Intent intent = new Intent(this, HotkeyActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_HOTKEY);
                 break;
             case R.id.button_bluetooth:
                 establishConnectionBt();
@@ -239,6 +315,7 @@ public class MainActivity extends ActionBarActivity
                 mCommMode = COMM_MODE_WIFI;
         }
     }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -284,23 +361,8 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onMotion(int[] iCommand, int pointerCount) {
         sendCommand(false, Command.TYPE_MOUSE_MOVE, iCommand);
-        /*if (mWifiCommService.isConnected()) {
-            byte[] bMessage = null;
-            if (pointerCount == 1){
-                bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_MOUSE_MOVE, iCommand));
-            }
-            /*
-            else if(pointerCount == 2){
-                bMessage =
-                        MessagePacker.pack(new Command(Command.TYPE_MOUSE_SCROLL, iCommand));
-            }
-            */
-         /*   if(bMessage != null) {
-                mWifiCommService.write(bMessage);
-            }
-        }*/
     }
+
 
     @Override
     public void onDown(int pointerCount) {
@@ -314,12 +376,39 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+
     @Override
     protected void onPause() {
+        if (D) Log.d(TAG, "onPause() called.");
         super.onPause();
-
-        //TODO save app variables such as communication mode (mCommMode)
     }
+
+
+    @Override
+    protected void onStop() {
+        if (D) Log.d(TAG, "onStop() called.");
+        super.onStop();
+        sendCommand(false, Command.TYPE_CLIENT_STATE, Command.CLIENT_PAUSED);
+        if (mCommMode == COMM_MODE_BT)
+            mBtCommService.stop();
+
+        String[] stringArray = {mConnectedDeviceAddress, mConnectedDeviceName};
+        mSaveReadBtCommStr.saveFile(this, stringArray, STR_DATA_STRINGS);
+        int[] intArray = {mCommMode};
+        mSaveReadBtCommInt.saveFile(this, intArray, STR_DATA_INTEGERS);
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        if (D) Log.d(TAG, "onDestroy() called.");
+
+        int[] intArray = {COMM_MODE_NONE};
+        mSaveReadBtCommInt.saveFile(this, intArray, STR_DATA_INTEGERS);
+
+        super.onDestroy();
+    }
+
 
     public void sendCommand(boolean errorMsg, byte type, int... iCommand){
         boolean isConnected = false;
@@ -350,6 +439,7 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+
     // The Handler that gets information back from the BluetoothChatService
     private final Handler mHandler = new Handler() {
         @Override
@@ -360,17 +450,17 @@ public class MainActivity extends ActionBarActivity
                         case BtCommService.STATE_CONNECTED:
                             //mTitle.setText(R.string.title_connected_to);
                             //mTitle.append(mConnectedDeviceName);
-                            Toast.makeText(getApplicationContext(), "Connected to "
-                                    + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getApplicationContext(), "Connected to "
+                            //        + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                             break;
                         case BtCommService.STATE_CONNECTING:
                             //mTitle.setText(R.string.title_connecting);
-                            Toast.makeText(MainActivity.this, "Connecting...", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(MainActivity.this, "Connecting...", Toast.LENGTH_SHORT).show();
                             break;
                         case BtCommService.STATE_LISTEN:
                         case BtCommService.STATE_NONE:
                             //mTitle.setText(R.string.title_not_connected);
-                            Toast.makeText(MainActivity.this, "Not connected.", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(MainActivity.this, "Not connected.", Toast.LENGTH_SHORT).show();
                             break;
                     }
                     break;
@@ -386,9 +476,11 @@ public class MainActivity extends ActionBarActivity
         }
     };
 
+
     public void error(String stError, int length){
         Toast.makeText(this, "ERROR: " + stError, length).show();
     }
+
 
     public void info(String stInfo, int length){
         Toast.makeText(this, "INFO: " + stInfo, length).show();

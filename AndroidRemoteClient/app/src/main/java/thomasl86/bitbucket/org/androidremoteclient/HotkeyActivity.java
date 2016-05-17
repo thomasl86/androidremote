@@ -1,7 +1,9 @@
 package thomasl86.bitbucket.org.androidremoteclient;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -10,9 +12,18 @@ import android.widget.Button;
 /**
  * Created by thomas on 06.05.16.
  */
-public class HotkeyActivity extends MainActivity
+public class HotkeyActivity extends Activity
         implements View.OnClickListener, DialogInterface.OnClickListener
 {
+
+
+    /* Members */
+
+    public static final String STR_COMM_TYPE    = "command_type";
+    public static final String STR_COMMAND      = "command";
+
+
+    /* Methods */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,18 +42,27 @@ public class HotkeyActivity extends MainActivity
 
     @Override
     public void onClick(View v) {
+        Intent intent = new Intent();
         switch (v.getId()){
             case R.id.button_new_pr_win:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_PR_WIN);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_NEW_PR_WIN);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_new_win:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_WIN);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_NEW_WIN);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_new_tab:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_NEW_TAB);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_NEW_TAB);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_close_tab:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_CLOSE_TAB);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_CLOSE_TAB);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_shutdown:
                 boolean doShutdown;
@@ -55,17 +75,23 @@ public class HotkeyActivity extends MainActivity
                 dialog.show();
                 break;
             case R.id.button_searchbar:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_SEARCHBAR);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_SEARCHBAR);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_mute:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_MUTE);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_MUTE);
+                setResult(Activity.RESULT_OK, intent);
                 break;
             case R.id.button_close_win:
-                super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_CLOSE_WIN);
+                intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+                intent.putExtra(STR_COMMAND, Command.HK_CLOSE_WIN);
+                setResult(Activity.RESULT_OK, intent);
                 break;
         }
+        finish();
     }
-
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -74,7 +100,12 @@ public class HotkeyActivity extends MainActivity
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        if (which == DialogInterface.BUTTON_POSITIVE)
-            super.sendCommand(true, Command.TYPE_HOTKEY, Command.HK_SHUTDOWN);
+        Intent intent = new Intent();
+        if (which == DialogInterface.BUTTON_POSITIVE) {
+            intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
+            intent.putExtra(STR_COMMAND, Command.HK_SHUTDOWN);
+            setResult(Activity.RESULT_OK, intent);
+        }
+        finish();
     }
 }
