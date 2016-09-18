@@ -15,9 +15,9 @@ public class BtCommService {
 	
 	/* Members */
 
-	InputStream mInputStream 			= null;
-	StreamConnection mConnection 		= null;
-	StreamConnectionNotifier mNotifier 	= null;
+	private InputStream mInputStream 			= null;
+	private StreamConnection mConnection 		= null;
+	private StreamConnectionNotifier mNotifier 	= null;
 
 	
 	/* Methods */
@@ -33,12 +33,22 @@ public class BtCommService {
         String url = "btspp://localhost:" + uuid.toString() + ";name=RemoteBluetooth";
         mNotifier = (StreamConnectionNotifier)Connector.open(url);
         
-		Printing.info("Waiting for BT connection...", 0);
+        if (mInputStream == null)
+        	Printing.info("Waiting for BT connection...", 0);
+        else
+        	Printing.info("Waiting for BT connection...", 1);
+        
 		// Below is blocking until connection is established.
 		mConnection = mNotifier.acceptAndOpen();
-		Printing.info("Connected.", 0);
-		mInputStream = mConnection.openInputStream();
+		
+		if (mInputStream == null)
+			Printing.info("Connected.", 0);
+		else
+			Printing.info("Connected.", 1);
+		
+		mInputStream = mConnection.openInputStream(); 
 	}
+	
 	
 	public byte[] receive() throws IOException{
 		
@@ -50,6 +60,7 @@ public class BtCommService {
 		
 		return bMessage;
 	}
+	
 	
 	public void close() throws IOException{
 		mNotifier.close();

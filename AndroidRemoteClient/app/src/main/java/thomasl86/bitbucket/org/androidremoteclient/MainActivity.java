@@ -450,8 +450,8 @@ public class MainActivity extends ActionBarActivity
                         case BtCommService.STATE_CONNECTED:
                             //mTitle.setText(R.string.title_connected_to);
                             //mTitle.append(mConnectedDeviceName);
-                            //Toast.makeText(getApplicationContext(), "Connected to "
-                            //        + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Connected to "
+                                    + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                             break;
                         case BtCommService.STATE_CONNECTING:
                             //mTitle.setText(R.string.title_connecting);

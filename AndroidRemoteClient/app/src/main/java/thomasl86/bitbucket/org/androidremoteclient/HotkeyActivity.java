@@ -48,21 +48,25 @@ public class HotkeyActivity extends Activity
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_NEW_PR_WIN);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_new_win:
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_NEW_WIN);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_new_tab:
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_NEW_TAB);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_close_tab:
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_CLOSE_TAB);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_shutdown:
                 boolean doShutdown;
@@ -78,19 +82,21 @@ public class HotkeyActivity extends Activity
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_SEARCHBAR);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_mute:
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_MUTE);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
             case R.id.button_close_win:
                 intent.putExtra(STR_COMM_TYPE, Command.TYPE_HOTKEY);
                 intent.putExtra(STR_COMMAND, Command.HK_CLOSE_WIN);
                 setResult(Activity.RESULT_OK, intent);
+                finish();
                 break;
         }
-        finish();
     }
 
     @Override

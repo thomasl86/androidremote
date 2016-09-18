@@ -37,6 +37,7 @@ build/
 bin/
 .metadata/
 .settings/
+.recommenders/
 
 # Android Studio
 # https://github.com/github/gitignore/blob/master/Android.gitignore

@@ -180,12 +180,12 @@ public class ServerThread extends Thread implements Runnable {
 				
 				if (command.mType == Command.TYPE_CLIENT_STATE){
 					if (command.mCommand[0] == Command.CLIENT_PAUSED){
-						Printing.info("Connection lost.", 0);
 						try {
 							mBtCommService.close();
 							mBtCommService.init();
 						} catch (IOException e) {
 							Printing.error("Re-connecting failed.");
+							//TODO Save the stack trace to a log file.
 							e.printStackTrace();
 						}
 					}
@@ -247,6 +247,10 @@ public class ServerThread extends Thread implements Runnable {
 					} catch (IOException e) {
 						Printing.error("IOException while trying apply hotkey.");
 					}
+					break;
+				default:
+					Printing.error("Case "+command.mType+" not defined.");
+					break;
 				}
 			}
 		}
