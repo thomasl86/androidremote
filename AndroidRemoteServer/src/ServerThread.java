@@ -224,7 +224,11 @@ public class ServerThread extends Thread implements Runnable {
 					Printing.info("Connected to phone. Listening on port " + WifiCommService.PORT_RCV + "...",1);
 					break;
 				case Command.TYPE_VOLUME:
-					media.volume(command.mCommand[0]);
+					try {
+						media.volume(command.mCommand[0]);
+					} catch (IOException e1) {
+						Printing.error("IOException while trying to change volume.");
+					}
 					break;
 				case Command.TYPE_KB:
 					if (!mKeyboard.type((char)command.mCommand[0], null)){
@@ -247,6 +251,12 @@ public class ServerThread extends Thread implements Runnable {
 					} catch (IOException e) {
 						Printing.error("IOException while trying apply hotkey.");
 					}
+					break;
+				case Command.TYPE_SEND_INFO:
+					//Command is not used. Case is included such we are not falling through to default.
+					break;
+				case Command.TYPE_CLIENT_STATE:
+					//Command is not used. Case is included such we are not falling through to default.
 					break;
 				default:
 					Printing.error("Case "+command.mType+" not defined.");
