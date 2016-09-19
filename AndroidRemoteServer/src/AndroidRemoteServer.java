@@ -49,22 +49,9 @@ public class AndroidRemoteServer {
 						).withRequiredArg();
 		OptionSet optionSet = parser.parse( args );
 		if (optionSet.hasOptions()){
-			/* Options that do not necessarily start the server */
-			// Print the wifi ip address and exit.
-			if (optionSet.has("ip")){
-				System.out.println(getWifiIpAddress());
-			}
 			if (optionSet.has("gui")){
 				mStartGui = true;
 				mStartServer = true;
-			}
-			// Print the help and exit.
-			if (optionSet.has("?") || optionSet.has("h") || optionSet.has("help")){
-				try {
-					parser.printHelpOn(System.out);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
 			}
 			// Run the server in verbose mode
 			if (optionSet.has("v") || optionSet.has("verbose")){
@@ -85,12 +72,27 @@ public class AndroidRemoteServer {
 					Printing.error("Wrong option for 'comm-mode'. Exiting.");
 				}
 			}
+			/* Options that do not necessarily start the server */
+			// Print the help and exit.
+			if (optionSet.has("?") || optionSet.has("h") || optionSet.has("help")){
+				mStartServer = false;
+				try {
+					parser.printHelpOn(System.out);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			// Print the wifi ip address and exit.
+			if (optionSet.has("ip")){
+				mStartServer = false;
+				System.out.println(getWifiIpAddress());
+			}
 		}
-		/* No options means that server is started with Bluetooth
-		 * as default communication mode.
+		/* No options means that server is started with Wifi
+		 * as default communication.
 		 */
 		else{
-			mCommMode = COMM_MODE_BT;
+			mCommMode = COMM_MODE_WIFI;
 			mStartServer = true;
 		}
 
